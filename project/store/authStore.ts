@@ -46,17 +46,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (error) throw error;
       
       if (data.user) {
-        // Create profile entry
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            email: data.user.email || email,
-          });
-        
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-          // Don't throw here - user is created, profile creation is secondary
+        // Only create profile if user signup was successful
+        try {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              id: data.user.id,
+              email: data.user.email || email,
+            });
+          
+          if (profileError) {
+            console.warn('Profile creation failed:', profileError.message);
+            // Don't throw - user is created successfully
+          }
+        } catch (profileErr) {
+          console.warn('Profile creation error:', profileErr);
+          // Continue - user registration was successful
         }
         
         const user: User = {
@@ -67,7 +72,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ user, isGuest: false });
       }
     } catch (error: any) {
-      set({ error: error.message });
+      console.error('Registration error:', error);
+      set({ error: error.message || 'Registration failed. Please try again.' });
     } finally {
       set({ isLoading: false });
     }
