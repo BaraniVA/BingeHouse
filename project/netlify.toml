@@ -1,10 +1,12 @@
 [build]
-  base = "."
+  base = ""
   command = "npm run build:web"
   publish = "dist"
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF ."
 
 [build.environment]
   NODE_VERSION = "18"
+  NPM_FLAGS = "--prefix=/opt/buildhome/.netlify_build"
 
 [[redirects]]
   from = "/*"
@@ -15,3 +17,8 @@
   for = "*.js"
   [headers.values]
     Content-Type = "application/javascript; charset=utf-8"
+
+[[headers]]
+  for = "*.css"
+  [headers.values]
+    Content-Type = "text/css; charset=utf-8"
